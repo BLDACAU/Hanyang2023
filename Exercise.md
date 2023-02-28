@@ -414,9 +414,11 @@ survdiff(Surv(time, status)~factor(trt), data = veteran)
     ## [1] 0.9277156
 
 The test statistic is
-$$ \frac{(O-E)^2}{V} \sim \chi_{1}^2 \quad \text{under }H_0 $$ The
-p-values is $P(\chi_{1}^2 > 0.00823) = 0.9277156$. Therefore we do not
-reject the null hypothesis, therefore, the survival function is not
+
+$$ \frac{(O-E)^2}{V} \sim \chi_{1}^2 \quad \text{under }H_0 $$
+
+The p-values is $P(\chi_{1}^2 > 0.00823) = 0.9277156$. Therefore we do
+not reject the null hypothesis, therefore, the survival function is not
 different between the standard treatment group and the test treatment
 group.
 
@@ -544,9 +546,10 @@ with the form of
 
 $$\lambda(t|\mathbf{z}_i) = \lambda_0(t)\exp(\mathbf{z}_i'\boldsymbol{\beta})
 =\lambda_0(t)\exp(z_{i1}\beta_1 + z_{i2}\beta_2 + z_{i3}\beta_3 + z_{i4}\beta_4)$$
+
 where
 $\mathbf{z}_i = (I(\text{cell-type = Squamous}), I(\text{cell-type = Small cell}), I(\text{cell-type = Adeno cell}), \text{performance status})'$,
-$\boldsymbol{\beta} = (\beta_1, \beta_2, \beta_3, \beta_4)'$.
+and $\boldsymbol{\beta} = (\beta_1, \beta_2, \beta_3, \beta_4)'$.
 
 ``` r
 xname <- c("Cell Type", "", "", "performance status")
@@ -634,6 +637,9 @@ the hazard ratio to change.
 
 To remove the problem of non-proportionality, first we use a cell-type
 variable as a stratifying variable. Then, a new model has the form of
+
+$$\lambda_k(t|\mathbf{z}_{ki}) &= \lambda_{k0}(t)\exp(z_{ki4}\beta_1), \quad k=1,2,3,4,$$
+
 which allows the cell-type specific baseline hazard functions.
 
 `strata` is used to specify a stratifying variable in `coxph`.
@@ -681,6 +687,8 @@ performance status to depend on time through the interaction term with
 time. Here, we let $g(t) = I(t>100)$.
 
 Then, our model has the form of
+
+$$\lambda_k(t|\mathbf{z}_{ki}) = \lambda_{k0}(t)\exp(z_{ki4}\beta_1 + z_{ki4}*I(t>100)\beta_2), \quad k=1,2,3,4$$
 
 The interpretation of regression coefficients is give in the following
 table.
