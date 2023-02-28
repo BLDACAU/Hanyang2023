@@ -11,6 +11,8 @@ output:
   header-includes: \usepackage{booktabs}
   html_document:
     fig_caption: yes
+  github_document:
+    html_preview: false
   csl: biomed-central.csl
 ---
 

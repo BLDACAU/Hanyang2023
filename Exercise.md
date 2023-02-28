@@ -3,6 +3,7 @@ title: 'Exercise: Veteran Data'
 author: "Jooyoung Lee"
 date: "3/15/2023"
 output:
+  github_do
   pdf_document:
     fig_caption: yes
     includes:
@@ -13,7 +14,6 @@ output:
     fig_caption: yes
   csl: biomed-central.csl
 ---
-
 
 A study was conducted to compare the effects of two chemotherapy treatments in survival times for lung cancer patients. A total of 137 patients were randomly assigned to one of standard or test treatment group. The data include a number of covariates including tumor cell types, a Karnofsky performance score, the age of patient and time in months from diagnosis to randomization. 
 
