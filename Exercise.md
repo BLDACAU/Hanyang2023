@@ -414,7 +414,7 @@ survdiff(Surv(time, status)~factor(trt), data = veteran)
     ## [1] 0.9277156
 
 The test statistic is
-$$ \frac{(O-E)^2}{V} \sim \chi_{1}^2 \quad \text{under }H_0 $$ The
+$$\frac{(O-E)^2}{V} \sim \chi_{1}^2 \quad \text{under }H_0$$ The
 p-values is $P(\chi_{1}^2 > 0.00823) = 0.9277156$. Therefore we do not
 reject the null hypothesis, therefore, the survival function is not
 different between the standard treatment group and the test treatment
