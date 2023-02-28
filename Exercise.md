@@ -543,7 +543,8 @@ to the model including only cell type and performance status variables
 with the form of
 
 $$\lambda(t|\mathbf{z}_i) = \lambda_0(t)\exp(\mathbf{z}_i'\boldsymbol{\beta})
-=\lambda_0(t)\exp(z_{i1}\beta_1 + z_{i2}\beta_2 + z_{i3}\beta_3 + z_{i4}\beta_4)$$
+=\lambda_0(t)\exp(z_{i1}\beta_1 + z_{i2}\beta_2 + z_{i3}\beta_3 + z_{i4}\beta_4),$$
+
 where
 $\mathbf{z}_i = (I(\text{cell-type = Squamous}), I(\text{cell-type = Small cell}), I(\text{cell-type = Adeno cell}), \text{performance status})'$,
 $\boldsymbol{\beta} = (\beta_1, \beta_2, \beta_3, \beta_4)'$.
