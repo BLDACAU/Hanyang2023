@@ -414,17 +414,10 @@ survdiff(Surv(time, status)~factor(trt), data = veteran)
     ## [1] 0.9277156
 
 The test statistic is
-<<<<<<< HEAD
 
-$$ \frac{(O-E)^2}{V} \sim \chi_{1}^2 \quad \text{under }H_0 $$
-
-The p-values is $P(\chi_{1}^2 > 0.00823) = 0.9277156$. Therefore we do
-not reject the null hypothesis, therefore, the survival function is not
-=======
-$$\frac{(O-E)^2}{V} \sim \chi_{1}^2 \quad \text{under }H_0$$ The
+$$ \frac{(O-E)^2}{V} \sim \chi_{1}^2 \quad \text{under }H_0 $$ The
 p-values is $P(\chi_{1}^2 > 0.00823) = 0.9277156$. Therefore we do not
 reject the null hypothesis, therefore, the survival function is not
->>>>>>> d2b4d64c4138edd814b21bbe725c755c78b414a7
 different between the standard treatment group and the test treatment
 group.
 
@@ -551,11 +544,7 @@ to the model including only cell type and performance status variables
 with the form of
 
 $$\lambda(t|\mathbf{z}_i) = \lambda_0(t)\exp(\mathbf{z}_i'\boldsymbol{\beta})
-<<<<<<< HEAD
 =\lambda_0(t)\exp(z_{i1}\beta_1 + z_{i2}\beta_2 + z_{i3}\beta_3 + z_{i4}\beta_4)$$
-=======
-=\lambda_0(t)\exp(z_{i1}\beta_1 + z_{i2}\beta_2 + z_{i3}\beta_3 + z_{i4}\beta_4),$$
->>>>>>> d2b4d64c4138edd814b21bbe725c755c78b414a7
 
 where
 $\mathbf{z}_i = (I(\text{cell-type = Squamous}), I(\text{cell-type = Small cell}), I(\text{cell-type = Adeno cell}), \text{performance status})'$,
