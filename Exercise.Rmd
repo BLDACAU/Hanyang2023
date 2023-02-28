@@ -205,8 +205,7 @@ colnames(res) <- c("Covariates", "Comparison",  "RR", "95% CI", "z", "p-value")
 rownames(res) <- NULL
 
 kable(res,
-digits = c(3, 3, 3, 4),
-caption="The results of Cox regression modeling for lung cancer patient survival")
+digits = c(3, 3, 3, 4))
 ```
 
 
@@ -218,8 +217,8 @@ summary(fit5)
 
 We drop non-significant variables by backward elimination, which leads to the model including only cell type and performance status variables with the form of 
 
-$$h(t|\mathbf{z}_i) = h_0(t)\exp(\mathbf{z}_i'\boldsymbol{\beta})
-=h_0(t)\exp(z_{i1}\beta_1 + z_{i2}\beta_2 + z_{i3}\beta_3 + z_{i4}\beta_4)$$
+$$\lambda(t|\mathbf{z}_i) = \lambda_0(t)\exp(\mathbf{z}_i'\boldsymbol{\beta})
+=\lambda_0(t)\exp(z_{i1}\beta_1 + z_{i2}\beta_2 + z_{i3}\beta_3 + z_{i4}\beta_4)$$
 where $\mathbf{z}_i = (I(\text{cell-type = Squamous}), I(\text{cell-type = Small cell}), I(\text{cell-type = Adeno cell}), \text{performance status})'$, $\boldsymbol{\beta} = (\beta_1, \beta_2, \beta_3, \beta_4)'$.
 
 
@@ -234,15 +233,14 @@ colnames(res) <- c("Covariates", "Comparison",  "RR", "95% CI", "z", "p-value")
 rownames(res) <- NULL
 
 kable(res,
-digits = c(3, 3, 3, 4),
-caption="The results of the final model using a Cox regression for lung cancer patient survival")
+digits = c(3, 3, 3, 4))
 ```
 
 
 We now plot the estimated cumulative hazard function and the survival function. In `R`, these estimators are calculated for a hypothesis person with the average covariates. Therefore, it is strongly recommended to use `newdata` to specify covariate values. 
 For example, we are interested in estimating the cumulative hazard function and the survival function for the individuals with squamous cell type and performance status of 50. 
 
-```{r, fig.cap="The estimated cumulative hazard function and the survival function for the individulas with cell type of squamous and performance status of 50."}
+```{r}
 
 # The breslow estimates
 H0 <- basehaz(fit5)
@@ -261,33 +259,22 @@ plot(H, main="Estimated Survival Function")
 
 Here, we check the proportional hazard assumptions. 
 
-```{r fig.width=4, fig.height=4, fig.cap="The Cox-Snell residual plots", fig.align="center"}
-# Cox-Snell Residuals
-coxsnell <- veteran$status - resid(fit5, type="martingale")
-fit.coxsnell <- survfit(Surv(coxsnell, veteran$status)~1)
-
-plot(log(fit.coxsnell$time), log(fit.coxsnell$cumhaz), ylab="log Cumulative Hazard of Cox-snell Residuals", xlab="log t")
-abline(0, 1, lty=2, lwd=1.5)
-```
-
-Although the Cox-Snell residual plots in Figure 2 show no evidence for the misspecified model, we will conduct the formal test for the PH assumption. Note that the Cox-snell residual plots are not very informative. 
-
 `cox.zph` function is used for checking the PH assumptions. In the output of `cox.zph`, `chisq` gives the test statistics with `df`, degrees of freedom and `p` gives the p-value. The last row of `GLOBAL` gives the global test of proportional hazards over all p Covariates. 
 
-```{r, fig.width=5, fig.height=4, fig.cap="The scaled Schoenfeld residual plot of the cell types in the model with the Kaplan-Meier transformation (i.e. $\\hat{\\beta}_l + r_{lj}^*(\\hat{\\boldsymbol{\\beta}})$ versus $t_j$, j=1,2.)"}
+```{r, fig.width=5, fig.height=4}
 zph.fit5 <- cox.zph(fit5)
 
 zph.fit5
 
 plot(zph.fit5[1])
 ```
-```{r, fig.width=5, fig.height=4, fig.cap="The scaled Schoenfeld residual plot of the performance status in the model with the Kaplan-Meier transformation (i.e. $\\hat{\\beta}_l + r_{lj}^*(\\hat{\\boldsymbol{\\beta}})$ versus $t_j$, l=1,2.)"}
+```{r, fig.width=5, fig.height=4}
 
 plot(zph.fit5[2])
 ```
 
 There is some evidence for nonproportionality for the cell types and performance status, which are the significant predictor in the Cox model. 
-In particular, the left penal of Figure 4 shows that the upward trend ends around 100 days for the scaled Schoenfeld residual plot of the performance status, $\hat{\beta}_l + r_{lj}^*(\hat{\boldsymbol{\beta}})$ versus $t_j$, which identifies 100 days as a point to allow the hazard ratio to change. 
+In particular, the left penal of Figure 4 shows that the upward trend ends around 100 days for the scaled Schoenfeld residual plot of the performance status, which identifies 100 days as a point to allow the hazard ratio to change. 
 
 ## Stratification
 
@@ -299,7 +286,7 @@ which allows the cell-type specific baseline hazard functions.
 
 `strata` is used to specify a stratifying variable in `coxph`.
 
-```{r, fig.width=5, fig.height=6, fig.cap="Survival functions versus time stratified by cell types for the individual with performance status of the mean of the performance status"}
+```{r, fig.width=5, fig.height=6}
 fit5.str <- coxph(Surv(time, status) ~ karno + strata(celltypef.), data=veteran, method="breslow")
 km <- survfit(fit5.str)
 km
@@ -378,7 +365,7 @@ zph.final.fit <- cox.zph(final.fit)
 
 
 ```
-```{r, fig.width=5, fig.height=4, fig.cap="The scaled Schoenfeld residual plot of the performance status in the model with the Kaplan-Meier transformation (i.e. $\\hat{\\beta}_1 + r_{1j}^*(\\hat{\\boldsymbol{\\beta}})$ versus $t_j$.)"}
+```{r, fig.width=5, fig.height=4}
 plot(zph.final.fit[1])
 ```
 

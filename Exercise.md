@@ -493,8 +493,7 @@ colnames(res) <- c("Covariates", "Comparison",  "RR", "95% CI", "z", "p-value")
 rownames(res) <- NULL
 
 kable(res,
-digits = c(3, 3, 3, 4),
-caption="The results of Cox regression modeling for lung cancer patient survival")
+digits = c(3, 3, 3, 4))
 ```
 
 | Covariates                   | Comparison         |    RR | 95% CI         |      z | p-value |
@@ -507,8 +506,6 @@ caption="The results of Cox regression modeling for lung cancer patient survival
 | Time from Diagnosis to entry | 1 month increase   | 1.000 | (0.982, 1.018) | -0.010 |   0.992 |
 | Prior Therapy                | Yes vs. No         | 1.075 | (0.682, 1.694) |  0.312 |   0.755 |
 | Age                          | 1 year increase    | 0.991 | (0.974, 1.01)  | -0.919 |   0.358 |
-
-The results of Cox regression modeling for lung cancer patient survival
 
 ``` r
 # drop treatment
@@ -545,8 +542,8 @@ We drop non-significant variables by backward elimination, which leads
 to the model including only cell type and performance status variables
 with the form of
 
-$$h(t|\mathbf{z}_i) = h_0(t)\exp(\mathbf{z}_i'\boldsymbol{\beta})
-=h_0(t)\exp(z_{i1}\beta_1 + z_{i2}\beta_2 + z_{i3}\beta_3 + z_{i4}\beta_4)$$
+$$\lambda(t|\mathbf{z}_i) = \lambda_0(t)\exp(\mathbf{z}_i'\boldsymbol{\beta})
+=\lambda_0(t)\exp(z_{i1}\beta_1 + z_{i2}\beta_2 + z_{i3}\beta_3 + z_{i4}\beta_4)$$
 where
 $\mathbf{z}_i = (I(\text{cell-type = Squamous}), I(\text{cell-type = Small cell}), I(\text{cell-type = Adeno cell}), \text{performance status})'$,
 $\boldsymbol{\beta} = (\beta_1, \beta_2, \beta_3, \beta_4)'$.
@@ -561,8 +558,7 @@ colnames(res) <- c("Covariates", "Comparison",  "RR", "95% CI", "z", "p-value")
 rownames(res) <- NULL
 
 kable(res,
-digits = c(3, 3, 3, 4),
-caption="The results of the final model using a Cox regression for lung cancer patient survival")
+digits = c(3, 3, 3, 4))
 ```
 
 | Covariates         | Comparison         |    RR | 95% CI         |      z | p-value |
@@ -571,9 +567,6 @@ caption="The results of the final model using a Cox regression for lung cancer p
 |                    | Small vs. Large    | 1.473 | (0.883, 2.456) |  1.483 |   0.138 |
 |                    | Adeno vs. Large    | 2.283 | (1.285, 4.058) |  2.815 |   0.005 |
 | performance status | 1 unit increase    | 0.970 | (0.96, 0.979)  | -5.968 |   0.000 |
-
-The results of the final model using a Cox regression for lung cancer
-patient survival
 
 We now plot the estimated cumulative hazard function and the survival
 function. In `R`, these estimators are calculated for a hypothesis
@@ -596,33 +589,11 @@ plot(H, fun="cumhaz", main="Estimated Cumulative Hazard")
 plot(H, main="Estimated Survival Function")
 ```
 
-<figure>
-<img src="Exercise_files/figure-gfm/unnamed-chunk-11-1.png"
-alt="The estimated cumulative hazard function and the survival function for the individulas with cell type of squamous and performance status of 50." />
-<figcaption aria-hidden="true">The estimated cumulative hazard function
-and the survival function for the individulas with cell type of squamous
-and performance status of 50.</figcaption>
-</figure>
+![](Exercise_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
 
 ## Model diagnostics
 
 Here, we check the proportional hazard assumptions.
-
-``` r
-# Cox-Snell Residuals
-coxsnell <- veteran$status - resid(fit5, type="martingale")
-fit.coxsnell <- survfit(Surv(coxsnell, veteran$status)~1)
-
-plot(log(fit.coxsnell$time), log(fit.coxsnell$cumhaz), ylab="log Cumulative Hazard of Cox-snell Residuals", xlab="log t")
-abline(0, 1, lty=2, lwd=1.5)
-```
-
-<img src="Exercise_files/figure-gfm/unnamed-chunk-12-1.png" title="The Cox-Snell residual plots" alt="The Cox-Snell residual plots" style="display: block; margin: auto;" />
-
-Although the Cox-Snell residual plots in Figure 2 show no evidence for
-the misspecified model, we will conduct the formal test for the PH
-assumption. Note that the Cox-snell residual plots are not very
-informative.
 
 `cox.zph` function is used for checking the PH assumptions. In the
 output of `cox.zph`, `chisq` gives the test statistics with `df`,
@@ -644,39 +615,20 @@ zph.fit5
 plot(zph.fit5[1])
 ```
 
-<figure>
-<img src="Exercise_files/figure-gfm/unnamed-chunk-13-1.png"
-alt="The scaled Schoenfeld residual plot of the cell types in the model with the Kaplan-Meier transformation (i.e. \hat{\beta}_l + r_{lj}^*(\hat{\boldsymbol{\beta}}) versus t_j, j=1,2.)" />
-<figcaption aria-hidden="true">The scaled Schoenfeld residual plot of
-the cell types in the model with the Kaplan-Meier transformation
-(i.e. <span class="math inline">$\hat{\beta}_l +
-r_{lj}^*(\hat{\boldsymbol{\beta}})$</span> versus <span
-class="math inline"><em>t</em><sub><em>j</em></sub></span>,
-j=1,2.)</figcaption>
-</figure>
+![](Exercise_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
 
 ``` r
 plot(zph.fit5[2])
 ```
 
-<figure>
-<img src="Exercise_files/figure-gfm/unnamed-chunk-14-1.png"
-alt="The scaled Schoenfeld residual plot of the performance status in the model with the Kaplan-Meier transformation (i.e. \hat{\beta}_l + r_{lj}^*(\hat{\boldsymbol{\beta}}) versus t_j, l=1,2.)" />
-<figcaption aria-hidden="true">The scaled Schoenfeld residual plot of
-the performance status in the model with the Kaplan-Meier transformation
-(i.e. <span class="math inline">$\hat{\beta}_l +
-r_{lj}^*(\hat{\boldsymbol{\beta}})$</span> versus <span
-class="math inline"><em>t</em><sub><em>j</em></sub></span>,
-l=1,2.)</figcaption>
-</figure>
+![](Exercise_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
 
 There is some evidence for nonproportionality for the cell types and
 performance status, which are the significant predictor in the Cox
 model. In particular, the left penal of Figure 4 shows that the upward
 trend ends around 100 days for the scaled Schoenfeld residual plot of
-the performance status,
-$\hat{\beta}_l + r_{lj}^*(\hat{\boldsymbol{\beta}})$ versus $t_j$, which
-identifies 100 days as a point to allow the hazard ratio to change.
+the performance status, which identifies 100 days as a point to allow
+the hazard ratio to change.
 
 ## Stratification
 
@@ -720,13 +672,7 @@ library(survminer)
 ggsurvplot(km, data = veteran, risk.table = TRUE, conf.int=FALSE, risk.table.height = 0.3) 
 ```
 
-<figure>
-<img src="Exercise_files/figure-gfm/unnamed-chunk-15-1.png"
-alt="Survival functions versus time stratified by cell types for the individual with performance status of the mean of the performance status" />
-<figcaption aria-hidden="true">Survival functions versus time stratified
-by cell types for the individual with performance status of the mean of
-the performance status</figcaption>
-</figure>
+![](Exercise_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
 
 ## Time-dependent Covariate
 
@@ -807,15 +753,7 @@ zph.final.fit <- cox.zph(final.fit)
 plot(zph.final.fit[1])
 ```
 
-<figure>
-<img src="Exercise_files/figure-gfm/unnamed-chunk-17-1.png"
-alt="The scaled Schoenfeld residual plot of the performance status in the model with the Kaplan-Meier transformation (i.e. \hat{\beta}_1 + r_{1j}^*(\hat{\boldsymbol{\beta}}) versus t_j.)" />
-<figcaption aria-hidden="true">The scaled Schoenfeld residual plot of
-the performance status in the model with the Kaplan-Meier transformation
-(i.e. <span class="math inline">$\hat{\beta}_1 +
-r_{1j}^*(\hat{\boldsymbol{\beta}})$</span> versus <span
-class="math inline"><em>t</em><sub><em>j</em></sub></span>.)</figcaption>
-</figure>
+![](Exercise_files/figure-gfm/unnamed-chunk-16-1.png)<!-- -->
 
 The p-values from the marginal and global tests do not give evidence
 against the PH assumption and the plot of the scaled Schoenfeld
