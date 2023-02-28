@@ -1,0 +1,261 @@
+---
+title: "Untitled"
+output: github_document
+---
+---
+title: 'Exercise: 6MP Data'
+author: "Jooyoung Lee"
+date: "3/15/2023"
+output:
+  pdf_document:
+    fig_caption: yes
+    includes:
+      in_header: header.tex
+  word_document: default
+  header-includes: \usepackage{booktabs}
+  html_document:
+    fig_caption: yes
+  csl: biomed-central.csl
+---
+
+
+A study was conducted to compare the effects of two chemotherapy treatments in survival times for lung cancer patients. A total of 137 patients were randomly assigned to one of standard or test treatment group. The data include a number of covariates including tumor cell types, a Karnofsky performance score, the age of patient and time in months from diagnosis to randomization. 
+
+
+\begin{table}[h!]
+\caption{Description of Variables in Veteran Lung Cancer Data.}
+\centering
+\vspace{2mm}
+\begin{tabular}{l l l}
+\hline
+Variable & Description\\
+\hline
+\textsf{trt} &  1 = standard 2 = test\\
+\textsf{celltype}  &  1 = squamous, 2 = smallcell, 3 = adeno, 4 = large \\
+\textsf{time} & survival time\\
+\textsf{status} & event status\\
+\textsf{karno} & Karnofsky performance score. A scale of 10.\\
+\textsf{diagtime} & the months from diagnosis of lung cancer to entry into the study\\
+\textsf{age} & the age of the patient in years\\
+\textsf{prior} & 0 = no prior therapy 10 = prior therapy\\
+\hline
+\end{tabular}
+\end{table}
+
+
+```{r}
+library(survival)
+data(veteran)
+
+?veteran
+```
+
+```{r}
+dat <- read.table("6MP.txt", header=T)
+```
+
+
+\begin{table}[h!]
+\caption{Computation of the number at risk, the number of events at each event time}
+\centering
+\begin{tabular}{ccc c ccc}
+\hline
+\multicolumn{3}{c}{Drug 6-MP} & & \multicolumn{3}{c}{Placebo}\\
+\hline
+$t_j$ & $n_j$ & $d_j$ & & $t_j$ & $n_j$ & $d_j$ \\
+\hline
+6 & 21 & 3   & & 1 & 21 & 2    \\
+7 & 17 & 1   & & 2 & 19 & 2     \\
+10 & 15 & 1  & & 3 & 17 & 1   \\
+13 & 12 & 1 & & 4 & 16 & 2   \\
+16 & 11 & 1 & &  5 & 14 & 2\\
+22 & 7 & 1 & & 8 & 12 & 4 \\
+23 & 6 & 1 & & 11 & 8 & 2  \\
+ &   &     & & 12 & 6 & 2 \\
+ & & &       & 15 & 4 & 1 \\
+  & &   &  &  17 & 3 & 1 \\
+   & & & &    22 & 2 & 1 \\
+   & & & &    23 & 1 & 1  \\
+\hline
+\end{tabular}
+\end{table}
+
+Table 1 shows the number of individuals at risk ($n_j$), the number of events ($d_j$) at each event time ($t_j$) for two groups. 
+
+## 1. The Nelson-Aalen Estimator
+We first obtain the Nelson-Aalen estimator for each group using the \textsf{survfit} function in \textsf{library(survival)}. 
+```{r}
+library(survival)
+# Placebo group
+fit0.na1 <- survfit(Surv(time, status) ~ 1, data=dat, subset=(trt==0),  ctype=1, conf.type="log")
+
+fit0.na1$cumhaz   # N-A
+fit0.na1$std.chaz # se of N-A; Aalan
+
+fit0 <- coxph(Surv(time, status) ~ 1, data=dat, 
+             subset=(trt==0), method="breslow") # we will cover this later
+fit0.na2 <- survfit(fit0, type="aalen", conf.type="log")
+fit0.na2$cumhaz   # N-A
+fit0.na2$std.err  # se of N-A; Aalan
+
+
+fit0.na3 <- survfit(Surv(time, status) ~ 1, data=dat, subset=(trt==0), ctype=2, conf.type="log")
+fit0.na3$cumhaz # For tied events - Fleming-Harrinngton; 
+fit0.na3$std.chaz
+```
+
+Since the tied events occurred, we have two options in \textsf{R}. 
+
+\begin{itemize}
+\item[1.]  \textsf{ctype=1}: Aalen
+\begin{align*}
+\Delta \widehat{H}(t_j) &= \frac{d_j}{n_j}.\\
+\Delta \hat{\sigma}^2(t_j) &=  \frac{d_j}{n_j^2}.
+\end{align*}
+\item[2.] \textsf{ctype=2}: Fleming-Harrinngton
+\begin{align*}
+\Delta \widehat{H}(t_j)& = \sum_{l=0}^{d_j-1} \frac{1}{n_j-l}.\\
+\Delta \hat{\sigma}^2(t_j) &= \sum_{l=0}^{d_j-1} \frac{1}{(n_j-l)^2}.
+\end{align*}
+
+\end{itemize}
+
+```{r}
+res.na <- data.frame(time=fit0.na1$time,
+n.risk=fit0.na1$n.risk, n.event=fit0.na1$n.event, cumHaz.na1=fit0.na1$cumhaz, 
+se.na1=fit0.na1$std.chaz, cumHaz.na2=fit0.na2$cumhaz, 
+se.na2=fit0.na2$std.err, cumHaz.na3 = fit0.na3$cumhaz, se.na3=fit0.na3$std.chaz)
+
+library(knitr) 
+kable(res.na,
+digits = c(1, 1, 1, 3, 3, 3, 3, 3, 3),
+caption="Nelson-Aalen Estimator for Placebo Group.")
+```
+
+Figure 1 displays the Nelson-Aalen estimate of the cumulative hazard function with two ways of correction for tied events: (1) Nelson-Aalen formula and (2) Fleming-Harrington correction.
+
+```{r,fig.cap="The estimated cumulative hazard using the Nelson-Aalen estimator with correction for tied-events for placebo and treatment group"}
+# Treatment group
+fit1.na1 <- survfit(Surv(time, status) ~ 1, data=dat, subset=(trt==1),  ctype=1, conf.type="log")
+
+fit1.na1$cumhaz   # N-A
+fit1.na1$std.chaz # se of N-A; Aalan
+
+fit1.na3 <- survfit(Surv(time, status) ~ 1, data=dat, subset=(trt==1), ctype=2, conf.type="log")
+fit1.na3$cumhaz # For tied events - Fleming-Harrinngton; 
+fit1.na3$std.chaz
+
+
+plot(fit0.na1, conf.int=F, ylim=c(0,4), fun="cumhaz", lty=1, col="black",
+                   xlab="TIME (WEEKS)",ylab="CUMULATIVE  HAZARD  FUNCTION")
+lines(fit1.na1, conf.int=F, fun="cumhaz", lty=1, col="blue")
+lines(fit0.na3, conf.int=F, fun="cumhaz", lty=2, col="black")
+lines(fit1.na3, conf.int=F, fun="cumhaz", lty=2, col="blue")
+legend(0, 4, c("NELSON-AALEN","FLEMING-HARRINGTON"), lty=c(1,2), col=c("black"), bty="n")
+text(15, 2.3, "Placebo")
+text(15, 0.7, "Treatment")
+```
+
+
+## 2. The Kaplan-Meier estimator
+
+Now we calculate the Kaplan-Meier estimates of the survival function for each group using the \textsf{survfit} function in \textsf{library(survival)}. 
+
+\textsf{survfit} uses the Greenwood's formula ($\tilde{\tau}^2(t)$ in Lecture note) for the variance calculation by default, which is 
+$Var(\widehat{S}(t)) = \widehat{S}(t)^2 \sum\limits_{j:t_j \leq t} \frac{d_j}{n_j(n_j-d_j)}$, where $\widehat{S}(t) = \prod\limits_{j:t_j \leq t}\left(1-\frac{d_j}{n_j}\right)$.
+
+### Confidence limits for $S(t)$
+Here we consider $100(1-\alpha)\%$ pointwise confidence intervals for $S(t)$ for a particular specified time $t$. 
+
+\textsf{survfit} has several options for types of confidence intervals. 
+\begin{itemize}
+\item[1.] \textsf{conf.type="plain"}
+$$\widehat{S}(t) \pm z_{1-\alpha/2}\hspace{1mm} se(\widehat{S}(t))$$
+\item[2.] \textsf{conf.type="log" (default)}
+$$\widehat{S}(t) \exp(\pm z_{1-\alpha/2} \hspace{1mm} se(\log\widehat{S}(t)),$$
+where 
+\begin{align*}
+Var(\log \widehat{S}(t)) =\sum_{j:t_j\leq t} \frac{d_j}{n_j(n_j-d_j)}.
+\end{align*}
+
+\item[3.] \textsf{conf.type="log-log"}
+$$\{\widehat{S}(t)\}^{\exp[\pm z_{1-\alpha/2} \hspace{1mm} se(\log[-\log\{\widehat{S}(t)\}])]},$$
+where
+\begin{align*}
+Var[\log \{-\log\widehat{S}(t)\}] &=\frac{1}{\{ \log \widehat{S}(t)\}^2} \sum_{j:t_j \leq t}\frac{d_j}{n_j(n_j-d_j)}.
+ \end{align*}
+\end{itemize}
+
+
+```{r}
+library(survival)
+
+# plain
+fit0.km1 <- survfit(Surv(time, status) ~ 1, data=dat, subset=(trt==0),  conf.type="plain")   
+summary(fit0.km1)
+
+# log-transformation (default)
+fit0.km2 <- survfit(Surv(time, status) ~ 1, data=dat, subset=(trt==0))  
+summary(fit0.km2)
+fit0.km2$surv   # est of S(t)
+fit0.km2$std.err  # se of H(t) or -log(S(t))
+
+fit0.km2$lower # 95% CI for S(t)
+fit0.km2$upper # 95% CI for S(t)
+
+# log-log transformation
+fit0.km3 <- survfit(Surv(time, status) ~ 1, data=dat, subset=(trt==0), conf.type="log-log")  
+summary(fit0.km3)
+
+res.km <- data.frame(time=summary(fit0.km1)$time,
+  lower.plain=summary(fit0.km1)$lower, 
+  lower.log=summary(fit0.km2)$lower, lower.loglog=summary(fit0.km3)$lower,
+  upper.plain=summary(fit0.km1)$upper, upper.log=summary(fit0.km2)$upper,
+  upper.loglog=summary(fit0.km3)$upper)
+
+kable(res.km,
+digits = c(1, 3, 3 ,3 ,3, 3, 3),
+caption="The 95% confidence intervals estimates of S(t) associated 
+with the standard-based (plain), the log-based, and log(-log)-based standard erros.")
+
+```
+
+
+```{r, fit.height=2.5, fig.cap="Pointwise 95% interval estimates for S(t) using plain (left panel); log-based (middle panel); log(-log)-based (right panel)"}
+par(mfrow=c(1,3))
+plot(fit0.km1, xlab="TIME(WEEKS)", ylab="ESTIMATED  PROBABILITY  OF  SURVIVAL")
+mtext("PLAIN", side=3, line=0.5,  cex=0.6)
+plot(fit0.km2, xlab="TIME(WEEKS)", ylab="ESTIMATED  PROBABILITY  OF  SURVIVAL")
+mtext("LOG TRANSFORM-BASED", side=3, line=0.5,  cex=0.6)
+plot(fit0.km3, xlab="TIME(WEEKS)",ylab="ESTIMATED  PROBABILITY  OF  SURVIVAL")
+mtext("LOG(-LOG) TRANSFORM-BASED", side=3, line=0.5, cex=0.6)
+```
+
+
+Note that confidence intervals on the left penal is symmetric, but others are not. 
+
+We can repeat the same analysis for the treatment group. 
+
+### Median Survival Time
+
+Suppose we construct the confidence limit of $S(t)$ based on the log-transformation. From the graphical method, the median survival time for the placebo group is 8 weeks and the corresponding 95\% confidence intervals are (4, 12).
+```{r, fig.width=3.5, fit.height=4, fig.align="center"}
+
+plot(fit0.km2, xlab="TIME(WEEKS)", ylab="ESTIMATED  PROBABILITY  OF  SURVIVAL")
+abline(h=0.5, lty=3, lwd=2, col="red")
+summary(fit0.km2)
+```
+
+
+## 3. Log-rank test
+
+Now, we want to test $H_0: S_1(t) = S_2(t)$ for all $t$.
+```{r}
+library(KMsurv)
+survdiff(Surv(time, status)~trt, data = dat)
+
+1-pchisq(16.8, 1)
+```
+The test statistic is 
+$$ \frac{(O-E)^2}{V} \sim \chi_{1}^2 \quad \text{under }H_0 $$
+The p-values is $P(\chi_{1}^2 > 16.8) = 4.153 10^{-5}$. Therefore we reject the null hypothesis, therefore, the survival function is different between the placebo group and the treatment group. 
